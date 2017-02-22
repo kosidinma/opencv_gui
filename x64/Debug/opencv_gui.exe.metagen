@@ -17,3 +17,9 @@ Assembly System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c5619
 Class opencv_gui.MyForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    System.Windows.Forms.Button cvtest : Public
+    System.Windows.Forms.PictureBox pictureBox1 : Public
+    System.Windows.Forms.PictureBox pictureBox2 : Public
+    System.Windows.Forms.TrackBar brightness : Public
+    System.Windows.Forms.TrackBar contrast : Public
