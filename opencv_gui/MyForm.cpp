@@ -147,8 +147,10 @@ void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 	//-- Detect cashew leaves
 	cashew_cascade.detectMultiScale(frame_gray, cashew_leaf, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
 	for (size_t k = 0; k < cashew_leaf.size(); k++)
-	{ //-- Draw rectangle round the face
-		rectangle(frame, cashew_leaf[k].br(), cashew_leaf[k].tl(), Scalar(234, 0, 255), 3, 8, 0);
+	{ //-- Draw rect round the leaf using my own size of boxes
+		Point br(cashew_leaf[k].br().x - ((cashew_leaf[k].br().x - cashew_leaf[k].tl().x) / 4), cashew_leaf[k].br().y + ((cashew_leaf[k].tl().y - cashew_leaf[k].br().y) / 4));
+		Point tl(cashew_leaf[k].tl().x + ((cashew_leaf[k].br().x - cashew_leaf[k].tl().x) / 4), cashew_leaf[k].tl().y - ((cashew_leaf[k].tl().y - cashew_leaf[k].br().y) / 4));
+		rectangle(frame, br, tl, Scalar(194, 82, 0), 3, 8, 0);
 	}
 
 	//-- Show what you got
