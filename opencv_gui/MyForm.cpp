@@ -1,6 +1,12 @@
 #include "MyForm.h"  //has all the cv libraries added
 #include <iostream>
+#include <fstream>
+#include "dirent.h"
+#include <string>
 #include <stdio.h>
+#include <msclr/marshal_cppstd.h>  //library to convert from System::String^ to std::string
+
+
 
 using namespace System;
 using namespace System::Windows::Forms;
@@ -27,9 +33,11 @@ Chose LBP because processing speed is important for timing GUI applications such
 //std::string face_cascade_name = "../data/facial_recog_classifiers/lbpcascade_frontalface.xml"; //face classifier file
 std::string face_cascade_name = "../data/facial_recog_classifiers/haarcascade_frontalface_alt.xml"; //face classifier file
 std::string eyes_cascade_name = "../data/facial_recog_classifiers/haarcascade_eye_tree_eyeglasses.xml"; //eye classifier file
-//initialize the classifiers
+std::string cashew_cascade_name = "../data/cashew_classifier/cashew_cascade.xml"; //eye classifier file
+																										//initialize the classifiers
 CascadeClassifier face_cascade; 
 CascadeClassifier eyes_cascade;
+CascadeClassifier cashew_cascade;
 bool face_detected = false;
 int brightness_val;
 int contrast_val;
@@ -63,6 +71,7 @@ void DrawCvImage(System::Windows::Forms::Control^ control, cv::Mat& colorImage)
 void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 {
 	std::vector<Rect> faces; //initialize vector of found faces
+	std::vector<Rect> cashew_leaf; //initialize vector of found cashew leaves
 	Mat frame_gray;
 
 	//convert to grayscale opencv
@@ -134,6 +143,14 @@ void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 			}
 		}
 	}
+
+	//-- Detect cashew leaves
+	cashew_cascade.detectMultiScale(frame_gray, cashew_leaf, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+	for (size_t k = 0; k < cashew_leaf.size(); k++)
+	{ //-- Draw rectangle round the face
+		rectangle(frame, cashew_leaf[k].br(), cashew_leaf[k].tl(), Scalar(234, 0, 255), 3, 8, 0);
+	}
+
 	//-- Show what you got
 	//DrawCvImage(pic, frame);
 	imshow("Press Escape To Stop", frame);
@@ -197,6 +214,7 @@ int opencv_gui::button_test(System::Windows::Forms::PictureBox^ pic, System::Win
 	//-- 1. Load the cascades for the facial identification
 	if (!face_cascade.load(face_cascade_name)) { printf("--(!)Error loading face cascade\n"); return -1; };
 	if (!eyes_cascade.load(eyes_cascade_name)) { printf("--(!)Error loading eyes cascade\n"); return -1; };
+	if (!cashew_cascade.load(cashew_cascade_name)) { printf("--(!)Error loading cashew cascade\n"); return -1; };
 
 	video_cap(pic, control);
 	return 0;
@@ -208,6 +226,57 @@ bool opencv_gui::face_det(void)
 	return face_detected;
 }
 
+
+void opencv_gui::positive_prep(System::Windows::Forms::TextBox^ constraint_params, System::Windows::Forms::TextBox^ inputdir, System::Windows::Forms::TextBox^ outputdir, System::Windows::Forms::TextBox^ outputfilename, System::Windows::Forms::Label^ bottomlabel)
+{
+	std::string constraints = " " + msclr::interop::marshal_as< std::string >(constraint_params->Text) + "\n";
+	if (constraints == "\n")
+	{
+		constraints = "1 2 2 199 199\n"; //set default constraints
+	}
+	std::string input_directory = msclr::interop::marshal_as< std::string >(inputdir->Text);
+	std::string output_file = msclr::interop::marshal_as< std::string >(outputdir->Text) + "/" + msclr::interop::marshal_as< std::string >(outputfilename->Text) + ".txt";
+	DIR *dir_p1 = opendir(input_directory.c_str());
+	struct dirent *dir_entry_p;
+	if (dir_p1 == NULL) {
+		bottomlabel->Text = "Couldn't open directory\n";
+	}
+
+	//fprintf(stderr, "Copying...%s to %s\n", input_directory.c_str(), output_file.c_str());
+	bottomlabel->Text = "Copying.." + inputdir->Text + "to" + outputdir->Text;
+	std::ofstream output;
+	output.open(output_file.c_str());
+	while ((dir_entry_p = readdir(dir_p1)) != NULL) {
+		output << input_directory + "/" << dir_entry_p->d_name << constraints;
+	}
+
+	bottomlabel->Text = "Done. Remember to remove . and .. dirs from text file\n"; 
+	output.close();
+}
+
+
+void opencv_gui::negative_prep(System::Windows::Forms::TextBox^ inputdir, System::Windows::Forms::TextBox^ outputdir, System::Windows::Forms::TextBox^ outputfilename, System::Windows::Forms::Label^ bottomlabel)
+{
+	std::string constraints = "\n";
+	std::string input_directory = msclr::interop::marshal_as< std::string >(inputdir->Text);
+	std::string output_file = msclr::interop::marshal_as< std::string >(outputdir->Text) + "/" + msclr::interop::marshal_as< std::string >(outputfilename->Text) + ".txt";
+	DIR *dir_p1 = opendir(input_directory.c_str());
+	struct dirent *dir_entry_p;
+	if (dir_p1 == NULL) {
+		bottomlabel->Text = "Couldn't open directory\n";
+	}
+
+	//fprintf(stderr, "Copying...%s to %s\n", input_directory.c_str(), output_file.c_str());
+	bottomlabel->Text = "Copying.." + inputdir->Text + "to" + outputdir->Text;
+	std::ofstream output;
+	output.open(output_file.c_str());
+	while ((dir_entry_p = readdir(dir_p1)) != NULL) {
+		output << input_directory + "/" << dir_entry_p->d_name << constraints;
+	}
+
+	bottomlabel->Text = "Done. Remember to remove . and .. dirs from text file\n";
+	output.close();
+}
 
 
 

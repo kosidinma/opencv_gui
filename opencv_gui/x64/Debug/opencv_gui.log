@@ -1,7 +1,7 @@
 ﻿  MyForm.cpp
-c:\users\kosyn_000\documents\visual studio 2015\projects\opencv_gui\opencv_gui\MyForm.h(262): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-MyForm.cpp(54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-MyForm.cpp(55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\kosyn_000\documents\visual studio 2015\projects\opencv_gui\opencv_gui\MyForm.h(499): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+MyForm.cpp(62): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+MyForm.cpp(63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\users\kosyn_000\downloads\setups\opencv\build\include\opencv2\core\cvstd.hpp(596): warning C4793: 'cv::String::String': function compiled as native:
   	Found an intrinsic not supported in managed code
 c:\users\kosyn_000\downloads\setups\opencv\build\include\opencv2\core\cuda.inl.hpp(105): warning C4793: 'cv::cuda::GpuMat::GpuMat': function compiled as native:
