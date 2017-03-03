@@ -33,7 +33,7 @@ Chose LBP because processing speed is important for timing GUI applications such
 //std::string face_cascade_name = "../data/facial_recog_classifiers/lbpcascade_frontalface.xml"; //face classifier file
 std::string face_cascade_name = "../data/facial_recog_classifiers/haarcascade_frontalface_alt.xml"; //face classifier file
 std::string eyes_cascade_name = "../data/facial_recog_classifiers/haarcascade_eye_tree_eyeglasses.xml"; //eye classifier file
-std::string cashew_cascade_name = "../data/cashew_classifier/cashew_cascade.xml"; //eye classifier file
+std::string cashew_cascade_name = "../data/cashew_classifier/cashew_cascade2.xml"; //eye classifier file
 																										//initialize the classifiers
 CascadeClassifier face_cascade; 
 CascadeClassifier eyes_cascade;
@@ -68,7 +68,7 @@ void DrawCvImage(System::Windows::Forms::Control^ control, cv::Mat& colorImage)
 
 
 /** @function to detect and display faces*/
-void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
+Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 {
 	std::vector<Rect> faces; //initialize vector of found faces
 	std::vector<Rect> cashew_leaf; //initialize vector of found cashew leaves
@@ -123,7 +123,7 @@ void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 	for (size_t i = 0; i < faces.size(); i++) //draw rectangle around all faces
 	{
 		//-- Draw rectangle round the face
-		rectangle(frame, faces[i].br(), faces[i].tl(), Scalar(255, 255, 255), 3, 8, 0);
+		rectangle(frame, faces[i].br(), faces[i].tl(), Scalar(0, 255, 0), 1, 8, 0);
 
 		Mat faceROI = frame_gray(faces[i]);
 		std::vector<Rect> eyes;
@@ -139,7 +139,7 @@ void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 			{ //-- Draw circle round the eyes
 				Point eye_center(faces[i].x + eyes[j].x + eyes[j].width / 2, faces[i].y + eyes[j].y + eyes[j].height / 2);
 				int radius = cvRound((eyes[j].width + eyes[j].height)*0.25);
-				circle(frame, eye_center, radius, Scalar(255, 0, 255), 3, 8, 0);
+				circle(frame, eye_center, radius, Scalar(255, 0, 255), 1, 8, 0);
 			}
 		}
 	}
@@ -155,15 +155,30 @@ void detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 
 	//-- Show what you got
 	//DrawCvImage(pic, frame);
-	imshow("Press Escape To Stop", frame);
+	imshow("Press Escape To Stop, Spacebar to capture", frame);
+	return frame;
 }
 
+
+std::string RandomString(int len) //create random string with "len" number of chars
+{
+	srand(time(0));
+	std::string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	std::string newstr;
+	int pos;
+	while (newstr.size() != len) {
+		pos = ((rand() % (str.size() - 1)));
+		newstr += str.substr(pos, 1);
+	}
+	return newstr;
+}
 
 
 //camera feed
 int video_cap(System::Windows::Forms::PictureBox^ pic, System::Windows::Forms::Control^ control)
 {	
 	VideoCapture cap;
+	std::string file_name;
 	if (!cap.open(0)) // open the default camera (camera 0), use something different from 0 otherwise;
 		return 0;
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
@@ -189,16 +204,22 @@ int video_cap(System::Windows::Forms::PictureBox^ pic, System::Windows::Forms::C
 			}
 		}
 
-		detectAndDisplay(new_image, pic);
+		new_image = detectAndDisplay(new_image, pic); //make it to be the entire augumented image
 		int c = waitKey(10);
-		if ((char)c == 27) { 
+		if ((char)c == 27) { //escape key press
 			control->Text = "Start Detecting";
 			control->Enabled = true;
 			// close the window
 			face_detected = false;
 			destroyAllWindows();
 			break; 
-		} // escape
+		} 
+		else if ((char)c == 32) //spacebar press
+		{
+			// Save the frame into a file
+			file_name = "../data/screenshots/" + RandomString(10) + ".jpg";
+			imwrite(file_name, new_image);
+		}
 	}
 	// the camera will be closed automatically upon exit
 	// cap.close();
