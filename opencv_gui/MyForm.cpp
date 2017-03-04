@@ -34,10 +34,16 @@ Chose LBP because processing speed is important for timing GUI applications such
 std::string face_cascade_name = "../data/facial_recog_classifiers/haarcascade_frontalface_alt.xml"; //face classifier file
 std::string eyes_cascade_name = "../data/facial_recog_classifiers/haarcascade_eye_tree_eyeglasses.xml"; //eye classifier file
 std::string cashew_cascade_name = "../data/cashew_classifier/cashew_cascade2.xml"; //eye classifier file
-																										//initialize the classifiers
+std::string kosy_cascade_name = "../data/facial_recog_classifiers/kosy_face_cascade.xml"; //kosy classifier file
+std::string disease_cascade_name = "../data/cashew_classifier/disease_cascade.xml"; //disease classifier file
+
+
+//initialize the classifiers
 CascadeClassifier face_cascade; 
 CascadeClassifier eyes_cascade;
 CascadeClassifier cashew_cascade;
+CascadeClassifier kosy_cascade;
+CascadeClassifier disease_cascade;
 bool face_detected = false;
 int brightness_val;
 int contrast_val;
@@ -72,6 +78,8 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 {
 	std::vector<Rect> faces; //initialize vector of found faces
 	std::vector<Rect> cashew_leaf; //initialize vector of found cashew leaves
+	std::vector<Rect> Kosy; //initialize vector of found cashew leaves
+	std::vector<Rect> disease; //initialize vector of found cashew leaves
 	Mat frame_gray;
 
 	//convert to grayscale opencv
@@ -124,6 +132,44 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 	{
 		//-- Draw rectangle round the face
 		rectangle(frame, faces[i].br(), faces[i].tl(), Scalar(0, 255, 0), 1, 8, 0);
+
+		//-- Detect Kosy and diseases
+		kosy_cascade.detectMultiScale(frame_gray, Kosy, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+		disease_cascade.detectMultiScale(frame_gray, disease, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+		if (Kosy.size() > 0)
+		{  //write text to screen
+			cv::putText(frame,
+				"Hey Kosy", //text
+				cv::Point(5, 10), // Coordinates
+				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+				0.5, // Scale. 2.0 = 2x bigger
+				cv::Scalar(255, 255, 255), // Color
+				1, // Thickness
+				CV_AA); // Anti-alias
+		}
+		else
+		{
+			cv::putText(frame,
+				"You're not Kosy", //text
+				cv::Point(5, 10), // Coordinates
+				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+				0.5, // Scale. 2.0 = 2x bigger
+				cv::Scalar(255, 255, 255), // Color
+				1, // Thickness
+				CV_AA); // Anti-alias
+		}
+
+		if (disease.size() > 0)
+		{  //write text to screen
+			cv::putText(frame,
+				"Ewwww disease", //text
+				cv::Point(5, 20), // Coordinates
+				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+				0.5, // Scale. 2.0 = 2x bigger
+				cv::Scalar(255, 255, 255), // Color
+				1, // Thickness
+				CV_AA); // Anti-alias
+		}
 
 		Mat faceROI = frame_gray(faces[i]);
 		std::vector<Rect> eyes;
@@ -238,6 +284,8 @@ int opencv_gui::button_test(System::Windows::Forms::PictureBox^ pic, System::Win
 	if (!face_cascade.load(face_cascade_name)) { printf("--(!)Error loading face cascade\n"); return -1; };
 	if (!eyes_cascade.load(eyes_cascade_name)) { printf("--(!)Error loading eyes cascade\n"); return -1; };
 	if (!cashew_cascade.load(cashew_cascade_name)) { printf("--(!)Error loading cashew cascade\n"); return -1; };
+	if (!kosy_cascade.load(kosy_cascade_name)) { printf("--(!)Error loading Kosy cascade\n"); return -1; };
+	if (!disease_cascade.load(disease_cascade_name)) { printf("--(!)Error loading disease cascade\n"); return -1; };
 
 	video_cap(pic, control);
 	return 0;
