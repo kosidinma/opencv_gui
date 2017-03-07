@@ -72,6 +72,20 @@ void DrawCvImage(System::Windows::Forms::Control^ control, cv::Mat& colorImage)
 }
 
 
+std::string RandomString(int len) //create random string with "len" number of chars
+{
+	srand(time(0));
+	std::string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	std::string newstr;
+	int pos;
+	while (newstr.size() != len) {
+		pos = ((rand() % (str.size() - 1)));
+		newstr += str.substr(pos, 1);
+	}
+	return newstr;
+}
+
+
 
 /** @function to detect and display faces*/
 Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
@@ -133,9 +147,8 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 		//-- Draw rectangle round the face
 		rectangle(frame, faces[i].br(), faces[i].tl(), Scalar(0, 255, 0), 1, 8, 0);
 
-		//-- Detect Kosy and diseases
+		//-- Detect Kosy
 		kosy_cascade.detectMultiScale(frame_gray, Kosy, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
-		disease_cascade.detectMultiScale(frame_gray, disease, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
 		if (Kosy.size() > 0)
 		{  //write text to screen
 			cv::putText(frame,
@@ -154,19 +167,7 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 				cv::Point(5, 10), // Coordinates
 				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
 				0.5, // Scale. 2.0 = 2x bigger
-				cv::Scalar(255, 255, 255), // Color
-				1, // Thickness
-				CV_AA); // Anti-alias
-		}
-
-		if (disease.size() > 0)
-		{  //write text to screen
-			cv::putText(frame,
-				"Ewwww disease", //text
-				cv::Point(5, 20), // Coordinates
-				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
-				0.5, // Scale. 2.0 = 2x bigger
-				cv::Scalar(255, 255, 255), // Color
+				cv::Scalar(0, 0, 0), // Color
 				1, // Thickness
 				CV_AA); // Anti-alias
 		}
@@ -197,27 +198,35 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 		Point br(cashew_leaf[k].br().x - ((cashew_leaf[k].br().x - cashew_leaf[k].tl().x) / 4), cashew_leaf[k].br().y + ((cashew_leaf[k].tl().y - cashew_leaf[k].br().y) / 4));
 		Point tl(cashew_leaf[k].tl().x + ((cashew_leaf[k].br().x - cashew_leaf[k].tl().x) / 4), cashew_leaf[k].tl().y - ((cashew_leaf[k].tl().y - cashew_leaf[k].br().y) / 4));
 		rectangle(frame, br, tl, Scalar(194, 82, 0), 3, 8, 0);
+
+
+		disease_cascade.detectMultiScale(frame_gray, disease, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30)); //detect diseases
+
+		if (disease.size() > 0)
+		{  //write text to screen
+			cv::putText(frame,
+				"DISEASED LEAF", //text
+				cv::Point(tl.x, tl.y - 20), // Coordinates
+				cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+				0.7, // Scale. 2.0 = 2x bigger
+				cv::Scalar(194, 82, 0), // Color
+				1, // Thickness
+				CV_AA); // Anti-alias
+		}
 	}
 
 	//-- Show what you got
 	//DrawCvImage(pic, frame);
 	imshow("Press Escape To Stop, Spacebar to capture", frame);
+	
+	if (disease.size() > 0 && cashew_leaf.size() > 0) {
+		// Save the frame into a file
+		std::string file_name = "../data/screenshots/disease" + RandomString(10) + ".jpg";
+		imwrite(file_name, frame);
+	}
 	return frame;
 }
 
-
-std::string RandomString(int len) //create random string with "len" number of chars
-{
-	srand(time(0));
-	std::string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-	std::string newstr;
-	int pos;
-	while (newstr.size() != len) {
-		pos = ((rand() % (str.size() - 1)));
-		newstr += str.substr(pos, 1);
-	}
-	return newstr;
-}
 
 
 //camera feed
