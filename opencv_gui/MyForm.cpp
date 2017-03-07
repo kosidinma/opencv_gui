@@ -219,11 +219,6 @@ Mat detectAndDisplay(Mat frame, System::Windows::Forms::PictureBox^ pic)
 	//DrawCvImage(pic, frame);
 	imshow("Press Escape To Stop, Spacebar to capture", frame);
 	
-	if (disease.size() > 0 && cashew_leaf.size() > 0) {
-		// Save the frame into a file
-		std::string file_name = "../data/screenshots/disease" + RandomString(10) + ".jpg";
-		imwrite(file_name, frame);
-	}
 	return frame;
 }
 
